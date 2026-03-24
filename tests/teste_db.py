@@ -1,21 +1,24 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from dataclasses import asdict
 
-from fast_zero.models import User, table_registry
+from sqlalchemy import select
+
+from fast_zero.models import User
 
 
-def teste_creat_user():
-    engine = create_engine('sqlite:///database.db')
-
-    table_registry.metadata.create_all(engine)
-
-    with Session(engine) as session:
-        user = User(
-            username='jaderson', email='jaderson@gmail.com', password='senha'
+def test_create_user(session, mock_db_time):
+    with mock_db_time(model=User) as time: 
+        new_user = User(
+            username='jaderson', password='secret', email='teste@test'
         )
-
-        session.add(user)
+        session.add(new_user)
         session.commit()
-        session.refresh(user)
 
-    assert user.id == 1
+    user = session.scalar(select(User).where(User.username == 'jaderson'))
+
+    assert asdict(user) == { 
+        'id': 1,
+        'username': 'jaderson',
+        'password': 'secret',
+        'email': 'teste@test',
+        'created_at': time,  
+    }
