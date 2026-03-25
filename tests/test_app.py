@@ -2,6 +2,8 @@ from http import HTTPStatus
 
 from fastapi.testclient import TestClient
 
+from fast_zero.schemas import UserPublic
+
 
 def test_root_deve_retornar_ola_mundo(client: TestClient):
     """
@@ -42,22 +44,25 @@ def test_create_user(client):
     }
 
 
-def teste_read_users(client: TestClient):
+def teste_read_users(client):
     response = client.get('/users/')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {
-        'users': [
-            {
-                'username': 'testusername',
-                'email': 'teste@gmail.com',
-                'id': 1,
-            }
-        ]
+        'users': []
     }
 
 
-def test_uptade_user(client):
+def teste_read_users_with_user(client, user):
+    user_schema = UserPublic.model_validate(user).model_dump()
+
+    response = client.get('/users/')
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'users': [user_schema]}
+
+
+def test_uptade_user(client, user):
 
     response = client.put(
         '/users/1',
@@ -68,13 +73,15 @@ def test_uptade_user(client):
             'id': 1,
         },
     )
+    assert response.status_code == HTTPStatus.OK
     assert response.json() == {
         'username': 'testusername2',
         'email': 'teste@gmail.com',
         'id': 1,
     }
 
-    def test_delete_user(client):
-        response = client.delete('/users/1')
 
-        assert response.json() == {'massage': 'User deleted'}
+def test_delete_user(client, user):
+    response = client.delete('/users/1')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'message': 'User deleted'}
