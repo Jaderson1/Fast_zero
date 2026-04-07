@@ -8,5 +8,5 @@ jobs:
     steps:
       - name: Instalar o python
         uses: actions/setup-python@v5
-        eith:
-        python-version '3.12'
+        with:
+          python-version: '3.12'
